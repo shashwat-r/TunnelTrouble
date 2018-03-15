@@ -5,7 +5,7 @@
 #include<deque>
 using namespace std;
 
-float globalvar = 0.3, globaldiff = 0.1;
+float globalvar = 0.3, globaldiff = 0.1; // for debugging purposes only
 float viewDist = 10.0, xl = 0.0, yl = 0.0, zl = 10.0, initAngle = 0.0;
 std::deque<float> dq;
 
