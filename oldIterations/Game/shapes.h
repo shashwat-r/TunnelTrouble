@@ -4,13 +4,13 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-float globalZ = 0;
-
-float eye[3] = {0.0, 0.0, 0.0}, center[3] = {0.0, 0.0, -0.01}, up[3] = {0.0, 1.0, 0.0};
+float globalZ = 0, division = 0.0;
+float framerate = 120.0;
+float eye[3] = {0.0, -0.5, 0.0}, center[3] = {0.0, 0.0, -10.0}, up[3] = {0.0, 1.0, 0.0};
 
 void draw();
-float lx = 0.0, ly = 0.0, lz = 15, zLength = 1, tunnelAngle = 0.0, piby180 = 3.14/180;
-std::deque<pair<float, float> > dq;
+float lx = 0.0, ly = 0.0, lz = 15, zLength = 1.0, tunnelAngle = 0.0, piby180 = 3.14/180;
+std::deque<pair<float, pair<float, float> > > dq;
 map<char, bool> isPressed;
 
 void handleKeypress(unsigned char key, int x, int y) {
@@ -52,29 +52,36 @@ void room() {
     }
 }
 
-float tunnelCurve(float zPos) {
-    return 2*sin(zPos/(piby180 * 1000));
+float tunnelCurveX(float zPos) {
+    float stretch = 1000;
+    float radToDeg = zPos/piby180;
+    float amplitude = 2;
+    return amplitude * sin( radToDeg / stretch );
     // return zPos/20;
 }
-
-float tunnelDerivativeCurve(float zPos) {
-    return atan(5*cos(zPos/(piby180 * 1000))/(piby180 * 1000))/piby180;
+float tunnelCurveY(float zPos) {
+    float stretch = 1000;
+    float radToDeg = zPos/piby180;
+    float amplitude = 2;
+    return amplitude * cos( radToDeg / stretch );
     // return zPos/20;
 }
 
 void timer(int)
 {
+    division += 0.1;
     for(int i = 0; i < dq.size(); i++) {
         dq[i].first += 0.1;
     }
-    if(dq[0].first >= 0.0) {
+    if(dq[0].first >= 1.0) {
+        division = 0.0;
         float zPos = dq[dq.size() - 1].first - zLength;
-        dq.push_back( {zPos, tunnelCurve(globalZ)} );
+        dq.push_back( {zPos, {tunnelCurveX(globalZ), tunnelCurveY(globalZ)}} );
         dq.pop_front();
         globalZ -= zLength;
     }
     glutPostRedisplay();
-    glutTimerFunc(1000.0/120.0, timer, 0);
+    glutTimerFunc(1000.0/framerate, timer, 0);
 }
 
 void initEnv() {
