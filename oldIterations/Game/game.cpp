@@ -83,32 +83,30 @@ void draw() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45.0, 1.333, 0.01, 1000);
-    gluLookAt(0.0, 0.0, 0.0,       0.0, 0.0, -10.0,     0.0, 1.0, 0.0);
+    gluLookAt(0.0, -0.1, 20.0,       0.0, 0.0, 0.0,     0.0, 1.0, 0.0);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    GLfloat lightColor0[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat lightColor0[] = {1.0f, 0.0f, 0.0f, 1.0f};
     GLfloat lightPos0[] = {lx, ly, lz, 1.0f};
     // glLightfv(GL_LIGHT0, GL_AMBIENT, lightColor0);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);
-    // glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor0);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor0);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
-    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.5);
+    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0);
 
-    // GLfloat lightColor1[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    // GLfloat lightPos1[] = {1, 1, 1, 0.0f};
-    // // glLightfv(GL_LIGHT0, GL_AMBIENT, lightColor0);
-    // // glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
-    // // glLightfv(GL_LIGHT1, GL_AMBIENT, lightColor1);
-    // glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
-    // // glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 1.0);
+    GLfloat lightColor1[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    GLfloat lightPos1[] = {1, 1, 1, 0.0f};
+    // glLightfv(GL_LIGHT0, GL_AMBIENT, lightColor0);
+    // glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, lightColor1);
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
+    // glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 1.0);
 
-    GLfloat mat_color[] = {0.0, 1.0, 0.0, 1.0};
-    // GLfloat shine_color[] = {10.0};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_color);
-    // glMaterialfv(GL_FRONT, GL_SPECULAR, mat_color);
-    // glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_color);
-    // glMaterialfv(GL_FRONT, GL_SHININESS, shine_color);
+    GLfloat mat_color[] = {1.0, 1.0, 1.0, 1.0};
+    GLfloat shine_color[] = {10.0};
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_color);
+    glMaterialfv(GL_FRONT, GL_SHININESS, shine_color);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     for(int i = 0; i < dq.size(); i++) {
         octagonRoom(dq[i], tunnelAngle);
     }
@@ -136,7 +134,7 @@ int main(int argc,char **argv)
     glutKeyboardFunc(handleKeypress);
     glutKeyboardUpFunc(handleKeyrelease);
 
-    // glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     // glEnable(GL_LIGHT1);
