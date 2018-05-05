@@ -1,71 +1,72 @@
-#include "shapes.h"
+#include "shapeSpecifications.h"
 
-int octagonCount = 51;
-void octagonRoomPlacer(float zPos, float xPos, float yPos) {
+void octagonRoomPlacer(tunnelUnitInfo tui) {
     glPushMatrix();
-    glTranslatef(0.0, 0, zPos);
-    glTranslatef(0.0, yPos, 0);
-    glTranslatef(xPos, 0.0, 0);
-    float xTranslated = -tunnelCurveX(globalZ + octagonCount*zLength); 
-    float prevXTranslated = -tunnelCurveX((globalZ + zLength) + octagonCount*zLength);
-    float yTranslated = -tunnelCurveY(globalZ + octagonCount*zLength); 
-    float prevYTranslated = -tunnelCurveY((globalZ + zLength) + octagonCount*zLength);
-    float reqXAngle = atan((xTranslated - prevXTranslated) / zLength) * 180/3.14;
-    float reqYAngle = atan((yTranslated - prevYTranslated) / zLength) * 180/3.14;
-    glRotatef(reqXAngle, 0.0, 1.0, 0.0);
-    glRotatef(-reqYAngle, 1.0, 0.0, 0.0);
-    room();
+    glTranslatef(tui.centerX, 0.0, tui.centerZ);
+    float xTranslated = -tunnelCurve(globalZ + tunnelUnitsCount*zLength); 
+    float reqAngle = atan(tunnelCurveDerivative(globalZ + tunnelUnitsCount*zLength)) * 180/3.14;
+    glRotatef(reqAngle, 0.0, 1.0, 0.0);
+    tunnelUnit(tui.obstaclePos);
     glPopMatrix();
 }
 
+bool detectCollision(int oP) {
+    if (oP == -1) return false;
+    float angle = (360/tunnelSides) * (float)oP;
+    float halfRange = 360/(2*tunnelSides);
+    float startAngle = angle - halfRange, endAngle = angle + halfRange;
+    cout<<startAngle<<" "<<sceneRotate<<" "<<endAngle<<" "<<oP<<endl;
+    return checkCircularlyIncreasing(startAngle, sceneRotate, endAngle);
+}
+
+void drawFullTunnel() {
+    for(int i = 0; i < dq.size(); i++) octagonRoomPlacer(dq[i]);
+}
+
+void sceneMovementCalculations() {
+    if(isPressed['a']) sceneRotate += 1.0; adjustAngle(sceneRotate);
+    if(isPressed['d']) sceneRotate -= 1.0; adjustAngle(sceneRotate);
+
+    sceneX = -tunnelCurve(globalZ + tunnelUnitsCount*zLength); 
+    float nextSceneX = -tunnelCurve((globalZ - zLength) + tunnelUnitsCount*zLength);
+    sceneDeltaX = (nextSceneX - sceneX)*division;
+
+    sceneAngle = -atan(tunnelCurveDerivative(globalZ + tunnelUnitsCount*zLength)) * 180/3.14;
+    float nextsceneAngle = -atan(tunnelCurveDerivative((globalZ - zLength) + tunnelUnitsCount*zLength)) * 180/3.14;
+    sceneDeltaAngle = ((nextsceneAngle) - (sceneAngle))*division;
+}
+
+void lightMovementCalculations() {
+    if(isPressed['f']) light0_Z -= 1.0;
+    if(isPressed['b']) light0_Z += 1.0;
+}
+
 void draw() {
-    glColor3f(0.0, 1.0, 0.0);
-    //stud camera movements
-    float xTranslated = -tunnelCurveX(globalZ + octagonCount*zLength); 
-    float prevXTranslated = -tunnelCurveX((globalZ + zLength) + octagonCount*zLength);
-    float nextXTranslated = -tunnelCurveX((globalZ - zLength) + octagonCount*zLength);
-
-    float yTranslated = -tunnelCurveY(globalZ + octagonCount*zLength); 
-    float prevYTranslated = -tunnelCurveY((globalZ + zLength) + octagonCount*zLength);
-    float nextYTranslated = -tunnelCurveY((globalZ - zLength) + octagonCount*zLength);
-
-    float reqXAngle = atan((xTranslated - prevXTranslated) / zLength) * 180/3.14;
-    float nextReqXAngle = atan((nextXTranslated - xTranslated) / zLength) * 180/3.14;
-
-    float reqYAngle = atan((yTranslated - prevYTranslated) / zLength) * 180/3.14;
-    float nextReqYAngle = atan((nextYTranslated - yTranslated) / zLength) * 180/3.14;
-
-    float deltaX = (nextXTranslated - xTranslated)*division;
-    float deltaY = (nextYTranslated - yTranslated)*division;
-    float xDeltaTheta = ((nextReqXAngle) - (reqXAngle))*division;
-    float yDeltaTheta = ((nextReqYAngle) - (reqYAngle))*division;
-
-    glTranslatef(0, deltaY, 0);
-    glTranslatef(0.0, yTranslated, 0);
-    glTranslatef(deltaX, 0, 0);
-    glTranslatef(xTranslated, 0.0, 0);
-    glRotatef(yDeltaTheta, 1.0, 0.0, 0.0);
-    glRotatef(reqYAngle, 1.0, 0.0, 0.0);
-    glRotatef(-xDeltaTheta, 0.0, 1.0, 0.0);
-    glRotatef(-reqXAngle, 0.0, 1.0, 0.0);
-
-    //studness finish
-    for(int i = 0; i < dq.size(); i++) {
-        octagonRoomPlacer(dq[i].first, dq[i].second.first, dq[i].second.second);
-    }
+    initDraw();
+    lightMovementCalculations();
+    initLights();
+    sceneMovementCalculations();
     glPushMatrix();
-    glColor3f(1.0, 0.0, 0.0);
-    // glTranslatef(+tunnelCurveX(globalZ + octagonCount*zLength), 0, 0);
-    glTranslatef(0, +tunnelCurveY(globalZ + octagonCount*zLength), 0);
-    // glutSolidCube(1.0);
+    glRotatef(sceneRotate, 0.0, 0.0, 1.0);
+    glTranslatef(sceneX + sceneDeltaX, 0, 0);
+    glRotatef(sceneAngle + sceneDeltaAngle, 0.0, 1.0, 0.0);
+    drawFullTunnel();
     glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(light0_X, light0_Y, light0_Z);
+    // glutSolidCube(-1.0);
+    glPopMatrix();
+    glFlush();
 }
 
 int main(int argc,char **argv)
 {
-    for(int i = 0; i < octagonCount; i++) {
-        dq.push_back( {globalZ, {tunnelCurveX(globalZ), tunnelCurveY(globalZ)}} );
+    for(int i = 0; i < tunnelUnitsCount + 1; i++) {
+        int oP = randObstaclePosition(obstacleRarity);
+        tunnelUnitInfo tui(tunnelCurve(globalZ), 0.0, globalZ, oP);
+        dq.push_back(tui);
         globalZ -= zLength;
     }
-    glutSabKuch(argc, argv);
+    glutEverything(argc, argv);
 }
